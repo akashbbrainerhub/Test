@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 460px; margin: 60px auto;">
+  <h1>Register</h1>
+  <p class="muted">Create your account to start managing tasks.</p>
+
+  {% if request.query_params.get('error') == 'username_taken' %}
+  <div class="error">Username is already taken. Choose another one.</div>
+  {% endif %}
+
+  {% if request.query_params.get('error') == 'invalid_input' %}
+  <div class="error">Invalid input. Username must be 3-50 chars using letters/numbers/_ and password must be at least 8 chars.</div>
+  {% endif %}
+
+  <form method="post" action="/auth/register/form" class="grid">
+    <input type="text" name="username" placeholder="Username (letters, numbers, underscore)" required />
+    <input type="password" name="password" placeholder="Password (min 8 chars)" required />
+    <button type="submit">Create Account</button>
+  </form>
+
+  <p class="muted" style="margin-top: 12px;">Already have an account? <a href="/auth/login">Login</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="topbar card">
+  <div>
+    <h1 style="margin-bottom:4px;">Task Dashboard</h1>
+    <div class="muted">Welcome {{ user.username }} <span class="badge">{{ user.role }}</span></div>
+  </div>
+  <form method="post" action="/auth/logout" style="max-width: 160px;">
+    <button class="secondary" type="submit">Logout</button>
+  </form>
+</div>
+
+<div class="grid grid-2">
+  <section class="card">
+    <h2>Create Task</h2>
+    <form method="post" action="/dashboard/tasks" class="grid">
+      <input type="text" name="title" placeholder="Title" required />
+      <textarea name="description" placeholder="Description" required></textarea>
+      <div class="row">
+        <input type="datetime-local" name="deadline" required />
+        <select name="status" required>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <button type="submit">Add Task</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Filter / Sort</h2>
+    <form method="get" action="/dashboard" class="grid">
+      <div class="row">
+        <select name="status">
+          <option value="" {% if status_filter == '' %}selected{% endif %}>All Status</option>
+          <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+          <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+      </div>
+      <div class="row">
+        <select name="sort_by">
+          <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Created At</option>
+          <option value="deadline" {% if sort_by == 'deadline' %}selected{% endif %}>Deadline</option>
+          <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title</option>
+          <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+        </select>
+        <select name="sort_order">
+          <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+          <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+        </select>
+      </div>
+      <div class="row">
+        <input type="number" name="page" value="{{ page }}" min="1" />
+        <input type="number" name="size" value="{{ size }}" min="1" max="100" />
+      </div>
+      <button type="submit">Apply</button>
+    </form>
+    <p class="muted" style="margin-top: 10px;">Total matching tasks: {{ total }}</p>
+  </section>
+</div>
+
+<section class="card" style="margin-top: 16px;">
+  <h2>Your Tasks</h2>
+  {% if not tasks %}
+    <p class="muted">No tasks found for this query.</p>
+  {% endif %}
+
+  {% for task in tasks %}
+    <article class="task-item">
+      <h3>{{ task.title }}</h3>
+      <p>{{ task.description }}</p>
+      <p class="muted">Deadline: {{ task.deadline }} | Status: <span class="badge">{{ task.status }}</span></p>
+
+      <form method="post" action="/dashboard/tasks/{{ task.id }}/update" class="grid">
+        <input type="text" name="title" value="{{ task.title }}" required />
+        <textarea name="description" required>{{ task.description }}</textarea>
+        <div class="row">
+          <input type="datetime-local" name="deadline" value="{{ task.deadline.strftime('%Y-%m-%dT%H:%M') }}" required />
+          <select name="status" required>
+            <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+          </select>
+        </div>
+        <div class="row">
+          <button type="submit">Update</button>
+        </div>
+      </form>
+
+      <form method="post" action="/dashboard/tasks/{{ task.id }}/delete" style="margin-top: 8px;">
+        <button class="danger" type="submit">Delete</button>
+      </form>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}
